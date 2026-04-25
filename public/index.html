@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Todo App</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+  <div class="bg-white w-full max-w-md rounded-2xl shadow-lg p-6">
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">My Todo App</h1>
+
+    <!-- Input -->
+    <div class="flex gap-2 mb-6">
+      <input
+        id="todoInput"
+        type="text"
+        placeholder="Add a new task..."
+        class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-400"
+      />
+      <button
+        onclick="addTodo()"
+        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium"
+      >
+        Add
+      </button>
+    </div>
+
+    <!-- Todo List -->
+    <ul id="todoList" class="space-y-3"></ul>
+  </div>
+
+  <script>
+    const API_URL = 'http://localhost:5000/api/todos';
+
+    async function fetchTodos() {
+      const res = await fetch(API_URL);
+      const todos = await res.json();
+      const list = document.getElementById('todoList');
+      list.innerHTML = todos.map(t => `
+        <li class="flex items-center justify-between bg-gray-50 px-4 py-3 rounded-lg border border-gray-200">
+          <span
+            onclick="toggleTodo('${t._id}', ${t.completed})"
+            class="cursor-pointer flex-1 ${t.completed ? 'line-through text-gray-400' : 'text-gray-700'}"
+          >
+            ${t.title}
+          </span>
+          <button
+            onclick="deleteTodo('${t._id}')"
+            class="ml-4 bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1 rounded-lg"
+          >
+            Delete
+          </button>
+        </li>
+      `).join('');
+    }
+
+    async function addTodo() {
+      const input = document.getElementById('todoInput');
+      if (!input.value.trim()) return;
+      await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: input.value })
+      });
+      input.value = '';
+      fetchTodos();
+    }
+
+    async function toggleTodo(id, completed) {
+      await fetch(`${API_URL}/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ completed: !completed })
+      });
+      fetchTodos();
+    }
+
+    async function deleteTodo(id) {
+      await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+      fetchTodos();
+    }
+
+    fetchTodos();
+  </script>
+</body>
+</html> 
