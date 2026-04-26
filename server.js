@@ -11,7 +11,7 @@ const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(cors({
-    origin: "https://todo-frontend-psi-two.vercel.app/login"
+    origin: "https://todo-frontend-psi-two.vercel.app/login",
     credentials: true
 }));
 
